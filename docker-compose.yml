@@ -1,7 +1,7 @@
 version: '2'
 services:
   prometheus:
-    image: prom/prometheus:v2.0.0
+    image: prom/prometheus:latest
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
       - ./alert.rules:/etc/prometheus/alert.rules
@@ -10,19 +10,20 @@ services:
       - '--config.file=/etc/prometheus/prometheus.yml'
     ports:
       - '9090:9090'
-  node-exporter:
-    image: prom/node-exporter:v0.15.2
-    volumes:
-      - /proc:/host/proc:ro
-      - /sys:/host/sys:ro
-      - /:/host/rootfs:ro
+  
+  node_exporter:
+    image: quay.io/prometheus/node-exporter:latest
+    container_name: node_exporter
     command:
-      - '--path.procfs=/host/proc'
-      - '--path.sysfs=/host/sys'
+      - '--path.rootfs=/host'
+    pid: host
+    restart: unless-stopped
+    volumes:
+      - '/:/host:ro,rslave'
     ports:
       - '9100:9100'
   grafana:
-    image: grafana/grafana:4.6.2
+    image: grafana/grafana:latest
     volumes:
         - grafana_data:/var/lib/grafana
     environment:
